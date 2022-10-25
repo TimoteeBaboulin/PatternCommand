@@ -1,58 +1,90 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Manager : MonoBehaviour{
-    private Cube _currentCube = null;
+    public Cube CurrentCube;
+    
+    public Context Context{
+        get => new Context(CurrentCube, this);
+    }
+    
     private Stack<Command> _commandStack = new Stack<Command>();
 
+    public void ChangeCube(Cube cube){
+        if (cube == null || cube == CurrentCube) return;
+
+        var command = new ChangeCubeCommand(this, cube);
+        command.Do();
+        _commandStack.Push(command);
+    }
+
+    public void KillCube(Cube cube){
+        if (cube == null) return;
+
+        var command = new KillCommand(cube);
+        command.Do();
+        _commandStack.Push(command);
+    }
+    
     private void Update(){
         if (Input.GetButtonDown("Fire1"))
-            PickCube();
+            ChangeCube(PickCube());
+
+        if (Input.GetButtonDown("Fire2")){
+            KillCube(PickCube());
+        }
+            
         
         if (Input.GetButtonDown("Jump") && _commandStack.Count > 0){
             _commandStack.Pop().Undo();
         }
         
-        if (_currentCube == null) return;
+        if (CurrentCube == null) return;
         
+        //Movement
         if (Input.GetKeyDown(KeyCode.RightArrow)){
-            var newCommand = new CommandRight();
-            newCommand.Do(_currentCube);
-            _commandStack.Push(newCommand);
+            var command = new CommandRight(CurrentCube);
+            command.Do();
+            _commandStack.Push(command);
         }
         if (Input.GetKeyDown(KeyCode.LeftArrow)){
-            var newCommand = new CommandLeft();
-            newCommand.Do(_currentCube);
-            _commandStack.Push(newCommand);
+            var command = new CommandLeft(CurrentCube);
+            command.Do();
+            _commandStack.Push(command);
         }
         if (Input.GetKeyDown(KeyCode.UpArrow)){
-            var newCommand = new CommandForward();
-            newCommand.Do(_currentCube);
-            _commandStack.Push(newCommand);
+            var command = new CommandForward(CurrentCube);
+            command.Do();
+            _commandStack.Push(command);
         }
         if (Input.GetKeyDown(KeyCode.DownArrow)){
-            var newCommand = new CommandBackward();
-            newCommand.Do(_currentCube);
-            _commandStack.Push(newCommand);
+            var command = new CommandBackward(CurrentCube);
+            command.Do();
+            _commandStack.Push(command);
         }
 
+        //Randomize color
         if (Input.GetKeyDown(KeyCode.R)){
-            var newCommand = new ColorChangeCommand(GetComponent<MeshRenderer>().material.color);
-            newCommand.Do(_currentCube);
-            _commandStack.Push(newCommand);
+            var command = new ColorChangeCommand(CurrentCube, Random.ColorHSV());
+            command.Do();
+            _commandStack.Push(command);
         }
     }
 
-    private void PickCube(){
+    private Cube PickCube(){
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, 20);
-        if (hit.collider.GetComponent<Cube>() == null) return;
+        Physics.Raycast(ray, out var hit, 20);
+        if (hit.collider.GetComponent<Cube>() == null) return null;
+        return hit.collider.GetComponent<Cube>();
+    }
+}
 
-        if (_currentCube != null) _currentCube.GetComponent<MeshRenderer>().material.color = Color.black;
-        _currentCube = hit.collider.GetComponent<Cube>();
-        _currentCube.GetComponent<MeshRenderer>().material.color = Color.red;
+public readonly struct Context{
+    public readonly Cube Cube;
+    public readonly Manager Manager;
+
+    public Context(Cube cube, Manager manager){
+        Cube = cube;
+        Manager = manager;
     }
 }

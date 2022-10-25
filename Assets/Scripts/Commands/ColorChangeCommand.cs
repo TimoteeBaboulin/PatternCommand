@@ -1,18 +1,19 @@
 ﻿using UnityEngine;
 
-public class ColorChangeCommand : Command{
+public class ColorChangeCommand : CommandCube{
     private Color _color;
 
-    public ColorChangeCommand(Color color){
+    public ColorChangeCommand(Cube context, Color color) : base(context){
         _color = color;
     }
 
-    public override void Do(Cube cube){
-        _cube = cube;
-        cube.GetComponent<MeshRenderer>().material.color = Random.ColorHSV();
+    public override void Do(){
+        var color = _context.GetColor();
+        _context.ChangeColor(_color);
+        _color = color;
     }
 
     public override void Undo(){
-        _cube.GetComponent<MeshRenderer>().material.color = _color;
+        _context.ChangeColor(_color);
     }
 }
