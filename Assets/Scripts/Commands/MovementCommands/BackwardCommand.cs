@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Commands.MovementCommands{
+namespace Commands{
     public class CommandBackward : CommandCube{
         public CommandBackward(Cube context) : base(context){
         }

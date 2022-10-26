@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Commands.MovementCommands{
+namespace Commands{
     public class HorizontalCommand : CommandCube{
         private readonly float _axisValue;
 

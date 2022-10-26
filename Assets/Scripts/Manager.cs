@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Commands;
-using Commands.DupeAndMovementCommands;
-using Commands.MovementCommands;
 using UnityEngine;
 
 public class Manager : MonoBehaviour{

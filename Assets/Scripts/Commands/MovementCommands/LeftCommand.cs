@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Commands.MovementCommands{
+namespace Commands{
     public class CommandLeft : CommandCube{
         public CommandLeft(Cube context) : base(context){
         }

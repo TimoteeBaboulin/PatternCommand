@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Commands.MovementCommands{
+namespace Commands{
     public class CommandForward : CommandCube{
         public CommandForward(Cube context) : base(context){
         }

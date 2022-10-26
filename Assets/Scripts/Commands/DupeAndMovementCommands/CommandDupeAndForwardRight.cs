@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Commands.DupeAndMovementCommands{
+namespace Commands{
     public class CommandDupeAndForwardRight : CommandCube{
         private readonly Stack<Command> _subCommands = new();
 
