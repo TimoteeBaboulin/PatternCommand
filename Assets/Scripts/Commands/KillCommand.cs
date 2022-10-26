@@ -1,12 +1,14 @@
-﻿public class KillCommand : CommandCube{
-    public override void Do(){
-        _context.gameObject.SetActive(false);
-    }
+﻿namespace Commands{
+    public class KillCommand : CommandCube{
+        public KillCommand(Cube context) : base(context){
+        }
 
-    public override void Undo(){
-        _context.gameObject.SetActive(true);
-    }
+        public override void Do(){
+            _context.gameObject.SetActive(false);
+        }
 
-    public KillCommand(Cube context) : base(context){
+        public override void Undo(){
+            _context.gameObject.SetActive(true);
+        }
     }
 }

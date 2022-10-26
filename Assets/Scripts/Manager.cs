@@ -1,74 +1,147 @@
+using System.Collections;
 using System.Collections.Generic;
+using Commands;
+using Commands.DupeAndMovementCommands;
+using Commands.MovementCommands;
 using UnityEngine;
 
 public class Manager : MonoBehaviour{
-    public Cube CurrentCube;
-    
-    public Context Context{
-        get => new Context(CurrentCube, this);
-    }
-    
-    private Stack<Command> _commandStack = new Stack<Command>();
+    public List<Cube> CurrentCube = new();
 
-    public void ChangeCube(Cube cube){
-        if (cube == null || cube == CurrentCube) return;
+    [SerializeField] private float _coroutineDelay = 0.2f;
+    private readonly Stack<Command> _commandStack = new();
+    private bool _canInput = true;
+    private bool _fusing;
 
-        var command = new ChangeCubeCommand(this, cube);
-        command.Do();
-        _commandStack.Push(command);
-    }
-
-    public void KillCube(Cube cube){
-        if (cube == null) return;
-
-        var command = new KillCommand(cube);
-        command.Do();
-        _commandStack.Push(command);
-    }
-    
     private void Update(){
-        if (Input.GetButtonDown("Fire1"))
-            ChangeCube(PickCube());
+        if (!_canInput) return;
 
-        if (Input.GetButtonDown("Fire2")){
+        if (Input.GetKeyDown(KeyCode.F)) _fusing = !_fusing;
+
+        if (Input.GetButtonDown("Fire1")){
+            if (!_fusing) ChangeCube(PickCube());
+            else AddCube(PickCube());
+        }
+
+
+        if (Input.GetButtonDown("Fire2"))
             KillCube(PickCube());
+
+        if (Input.GetKeyDown(KeyCode.R)){
+            StartCoroutine(ResetCoroutine());
+            return;
         }
-            
-        
-        if (Input.GetButtonDown("Jump") && _commandStack.Count > 0){
+
+
+        if (Input.GetButtonDown("Jump") && _commandStack.Count > 0)
             _commandStack.Pop().Undo();
-        }
-        
+
+
         if (CurrentCube == null) return;
-        
+
         //Movement
         if (Input.GetKeyDown(KeyCode.RightArrow)){
-            var command = new CommandRight(CurrentCube);
+            var command = new CommandPropagate<CommandRight>(this);
             command.Do();
             _commandStack.Push(command);
         }
+
         if (Input.GetKeyDown(KeyCode.LeftArrow)){
-            var command = new CommandLeft(CurrentCube);
+            var command = new CommandPropagate<CommandLeft>(this);
             command.Do();
             _commandStack.Push(command);
         }
+
         if (Input.GetKeyDown(KeyCode.UpArrow)){
-            var command = new CommandForward(CurrentCube);
+            var command = new CommandPropagate<CommandForward>(this);
             command.Do();
             _commandStack.Push(command);
         }
+
         if (Input.GetKeyDown(KeyCode.DownArrow)){
-            var command = new CommandBackward(CurrentCube);
+            var command = new CommandPropagate<CommandBackward>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        //Duplicate and move
+        if (Input.GetKeyDown("[8]")){
+            var command = new CommandPropagate<CommandDupeAndForward>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[2]")){
+            var command = new CommandPropagate<CommandDupeAndBackward>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[6]")){
+            var command = new CommandPropagate<CommandDupeAndRight>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[4]")){
+            var command = new CommandPropagate<CommandDupeAndLeft>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[7]")){
+            var command = new CommandPropagate<CommandDupeAndForwardLeft>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[9]")){
+            var command = new CommandPropagate<CommandDupeAndForwardRight>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[3]")){
+            var command = new CommandPropagate<CommandDupeAndBackRight>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+
+        if (Input.GetKeyDown("[1]")){
+            var command = new CommandPropagate<CommandDupeAndBackLeft>(this);
             command.Do();
             _commandStack.Push(command);
         }
 
         //Randomize color
-        if (Input.GetKeyDown(KeyCode.R)){
-            var command = new ColorChangeCommand(CurrentCube, Random.ColorHSV());
+        if (Input.GetKeyDown(KeyCode.C)){
+            var command = new CommandPropagate<ColorChangeCommand>(this);
             command.Do();
             _commandStack.Push(command);
         }
+
+        //Create cube at the same position
+        if (Input.GetKeyDown(KeyCode.D)){
+            var command = new CommandPropagate<CommandDuplicateCube>(this);
+            command.Do();
+            _commandStack.Push(command);
+        }
+    }
+
+    private void ChangeCube(Cube cube){
+        if (cube == null) return;
+
+        var command = new CommandChangeCube(this, cube);
+        command.Do();
+        _commandStack.Push(command);
+    }
+
+    private void KillCube(Cube cube){
+        if (cube == null) return;
+
+        var command = new KillCommand(cube);
+        command.Do();
+        _commandStack.Push(command);
     }
 
     private Cube PickCube(){
@@ -77,14 +150,21 @@ public class Manager : MonoBehaviour{
         if (hit.collider.GetComponent<Cube>() == null) return null;
         return hit.collider.GetComponent<Cube>();
     }
-}
 
-public readonly struct Context{
-    public readonly Cube Cube;
-    public readonly Manager Manager;
+    private void AddCube(Cube cube){
+        var command = new CommandAddCube(this, cube);
+        command.Do();
+        _commandStack.Push(command);
+    }
 
-    public Context(Cube cube, Manager manager){
-        Cube = cube;
-        Manager = manager;
+    //Coroutines
+    private IEnumerator ResetCoroutine(){
+        _canInput = false;
+        while (_commandStack.Count > 0){
+            _commandStack.Pop().Undo();
+            yield return new WaitForSeconds(_coroutineDelay);
+        }
+
+        _canInput = true;
     }
 }
