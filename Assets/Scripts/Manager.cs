@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Commands;
@@ -137,15 +138,18 @@ public class Manager : MonoBehaviour{
     private void KillCube(Cube cube){
         if (cube == null) return;
 
-        var command = new KillCommand(cube);
+        var command = new KillCommand(this, cube);
         command.Do();
         _commandStack.Push(command);
     }
 
     private Cube PickCube(){
+        if (Camera.main == null)
+            throw new NullReferenceException(
+                message: "Camera.main is null, can't cast a ray from non-existing camera. (Manager.PickCube())");
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Physics.Raycast(ray, out var hit, 20);
-        if (hit.collider.GetComponent<Cube>() == null) return null;
+        if (hit.collider != null && hit.collider.GetComponent<Cube>() == null) return null;
         return hit.collider.GetComponent<Cube>();
     }
 
