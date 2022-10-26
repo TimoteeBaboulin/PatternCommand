@@ -13,8 +13,8 @@ namespace Commands{
                 var color = Random.ColorHSV();
                 foreach (var cube in _context.CurrentCube){
                     var commandType = typeof(T);
-                    var classConstructor = commandType.GetConstructor(new[]{typeof(Cube), typeof(Color)});
-                    var command = (T) classConstructor.Invoke(new object[]{cube, color});
+                    var commandConstructor = commandType.GetConstructor(new[]{typeof(Cube), typeof(Color)});
+                    var command = (T) commandConstructor.Invoke(new object[]{cube, color});
                     command.Do();
                     _commands.Push(command);
                 }
@@ -24,8 +24,8 @@ namespace Commands{
 
             foreach (var cube in _context.CurrentCube){
                 var commandType = typeof(T);
-                var classConstructor = commandType.GetConstructor(new[]{typeof(Cube)});
-                var command = (T) classConstructor.Invoke(new object[]{cube});
+                var commandConstructor = commandType.GetConstructor(new[]{typeof(Cube)});
+                var command = (T) commandConstructor.Invoke(new object[]{cube});
                 command.Do();
                 _commands.Push(command);
             }

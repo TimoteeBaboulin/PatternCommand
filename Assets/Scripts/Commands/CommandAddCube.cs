@@ -11,19 +11,32 @@ namespace Commands{
         }
 
         public override void Do(){
-            if (!_context.CurrentCube.Contains(_cube) && _cube != null){
+            if (_cube != null){
+                //Si le cube existe deja dans la liste, enleve le a la place
+                if (_context.CurrentCube.Contains(_cube)){
+                    _context.CurrentCube.Remove(_cube);
+                    if (_cube.GetColor()==Color.red) 
+                        ChangeCubeColor(_cube, Color.black);
+                    return;
+                }
+                
                 _context.CurrentCube.Add(_cube);
                 if (_cube.GetColor() == Color.black){
-                    var command = new ColorChangeCommand(_cube, Color.red);
-                    command.Do();
-                    _commands.Push(command);
+                    ChangeCubeColor(_cube, Color.red);
                 }
             }
         }
 
         public override void Undo(){
-            _context.CurrentCube.Remove(_cube);
+            if (_context.CurrentCube.Contains(_cube)) _context.CurrentCube.Remove(_cube);
+            else _context.CurrentCube.Add(_cube);
             foreach (var command in _commands) command.Undo();
+        }
+
+        private void ChangeCubeColor(Cube cube, Color color){
+            var command = new ColorChangeCommand(cube, color);
+            command.Do();
+            _commands.Push(command);
         }
     }
 }

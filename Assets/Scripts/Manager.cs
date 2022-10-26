@@ -5,6 +5,7 @@ using Commands;
 using UnityEngine;
 
 public class Manager : MonoBehaviour{
+    public static event Action OnFuseChange;
     public List<Cube> CurrentCube = new();
 
     [SerializeField] private float _coroutineDelay = 0.2f;
@@ -15,7 +16,10 @@ public class Manager : MonoBehaviour{
     private void Update(){
         if (!_canInput) return;
 
-        if (Input.GetKeyDown(KeyCode.F)) _fusing = !_fusing;
+        if (Input.GetKeyDown(KeyCode.F)){
+            _fusing = !_fusing;
+            OnFuseChange?.Invoke();
+        }
 
         if (Input.GetButtonDown("Fire1")){
             if (!_fusing) ChangeCube(PickCube());
