@@ -1,6 +1,6 @@
 ﻿namespace Commands{
     public class KillCommand : CommandManager{
-        private Cube _cube;
+        private readonly Cube _cube;
         private bool _selected;
         public KillCommand(Manager context, Cube cube) : base(context){
             _cube = cube;

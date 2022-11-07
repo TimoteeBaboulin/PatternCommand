@@ -153,7 +153,7 @@ public class Manager : MonoBehaviour{
                 message: "Camera.main is null, can't cast a ray from non-existing camera. (Manager.PickCube())");
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Physics.Raycast(ray, out var hit, 20);
-        if (hit.collider != null && hit.collider.GetComponent<Cube>() == null) return null;
+        if (hit.collider == null || hit.collider.GetComponent<Cube>() == null) return null;
         return hit.collider.GetComponent<Cube>();
     }
 
